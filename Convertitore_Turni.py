@@ -206,6 +206,7 @@ def load_causali_from_csv(file) -> Dict[str, str]:
     # Pulisci righe vuote
     mapping = {k: v for k, v in mapping.items() if k and v}
     return mapping
+
 def _pick_excel_engine() -> str:
     """
     Restituisce l'engine da usare per Excel:
