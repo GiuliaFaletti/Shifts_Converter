@@ -1,3 +1,4 @@
 streamlit==1.38.0
 pandas==2.2.2
+pandas-calamine>=0.2.0
 openpyxl>=3.1.5
