@@ -11,7 +11,6 @@
 
 from __future__ import annotations
 
-import openpyxl
 import io
 import os
 import re
