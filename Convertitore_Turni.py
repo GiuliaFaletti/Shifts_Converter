@@ -207,28 +207,6 @@ def load_causali_from_csv(file) -> Dict[str, str]:
     mapping = {k: v for k, v in mapping.items() if k and v}
     return mapping
 
-def _pick_excel_engine() -> str:
-    """
-    Restituisce l'engine da usare per Excel:
-    - preferisci 'calamine' se installato (supporta xlsx/xls/xlsm)
-    - altrimenti 'openpyxl' se installato (xlsx/xlsm)
-    - altrimenti solleva un errore con istruzioni.
-    """
-    try:
-        import calamine  # noqa: F401  # provided by pandas-calamine
-        return "calamine"
-    except Exception:
-        pass
-    try:
-        import openpyxl  # noqa: F401
-        return "openpyxl"
-    except Exception:
-        raise ImportError(
-            "Nessun engine Excel disponibile. Installa uno tra:\n"
-            " - pandas-calamine (consigliato)\n"
-            " - openpyxl\n"
-            "Oppure carica il file turni in formato CSV."
-        )
 
 # ============================================================================
 # PARSING DEL TEMPLATE (EXCEL)
@@ -241,15 +219,22 @@ def parse_acme_template(excel_path: str, max_events: int = MAX_EVENTS) -> pd.Dat
     Ritorna un DataFrame del tipo:
         ['Employee','DateTok','HoursWorked','Ev1','Ev1Hours',...,'EvN','EvNHours'] (N = max_events)
     """
-    engine = _pick_excel_engine()  # <— scegli engine disponibile
-
-    xl = pd.ExcelFile(excel_path, engine=engine)
+    try:
+        import openpyxl  # noqa: F401
+    except ImportError:
+        st.error(
+            "Il supporto Excel (openpyxl) non è disponibile su questo ambiente. "
+            "Controllare 'requirements.txt' e includere 'openpyxl>=3.1.5'. "
+            "In alternativa, caricare il file turni in formato CSV."
+        )
+        st.stop()
+    xl = pd.ExcelFile(excel_path, engine="openpyxl")
     sheets = [s for s in xl.sheet_names if s.lower() != "causali"]
     if not sheets:
         raise ValueError("Nessun foglio turni trovato (solo 'Causali' presente).")
-    sheet = sheets[0]
+    sheet = sheets[0]  # usiamo il primo foglio utile
 
-    raw = pd.read_excel(excel_path, sheet_name=sheet, header=None, engine=engine).fillna("")
+    raw = pd.read_excel(excel_path, sheet_name=sheet, header=None, engine="openpyxl").fillna("")
     R, C = raw.shape
 
     # Per riconoscere inizio blocchi: colonna 0 in lower
