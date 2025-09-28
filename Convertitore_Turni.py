@@ -219,6 +219,15 @@ def parse_acme_template(excel_path: str, max_events: int = MAX_EVENTS) -> pd.Dat
     Ritorna un DataFrame del tipo:
         ['Employee','DateTok','HoursWorked','Ev1','Ev1Hours',...,'EvN','EvNHours'] (N = max_events)
     """
+    try:
+        import openpyxl  # noqa: F401
+    except ImportError:
+        st.error(
+            "Il supporto Excel (openpyxl) non è disponibile su questo ambiente. "
+            "Controllare 'requirements.txt' e includere 'openpyxl>=3.1.5'. "
+            "In alternativa, caricare il file turni in formato CSV."
+        )
+        st.stop()
     xl = pd.ExcelFile(excel_path, engine="openpyxl")
     sheets = [s for s in xl.sheet_names if s.lower() != "causali"]
     if not sheets:
